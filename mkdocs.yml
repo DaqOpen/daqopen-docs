@@ -1,0 +1,55 @@
+# mkdocs.yml
+site_name: DaqOpen Manual
+
+theme:
+  name: "material"
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - content.code.copy
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [../]  # search packages in the parent folder
+          options:
+            show_source: false
+            
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+
+nav:
+  - Home: index.md
+  - Tutorials:
+    - Getting Started: tutorials/getting-started-with-due.md
+    - Create DaqInfo: tutorials/create-daqinfo.md
+    - Use Cannelbuffer: tutorials/use-daqinfo-channelbuffer.md
+#    - tutorials/live-view-data.md
+  - How-to-Guides:
+    - how-to/prepare-arduino-due.md
+    - how-to/setup-python-environment.md
+#    - how-to/create-daqinfo.md
+#    - how-to/adapt-acquisition-param.md
+  - Knowledgebase: 
+    - knowledgebase/index.md
+#    - knowledgebase/data-acquisition-basics.md
+  - Reference: 
+    - reference/index.md
+    - daqopen-lib:
+      - reference/daqopen/index.md
+      - DueDaq: reference/daqopen/duedaq.md
+      - ChannelBuffer: reference/daqopen/channelbuffer.md
+      - DaqInfo: reference/daqopen/daqinfo.md
+      - DaqZmq: reference/daqopen/daqzmq.md
+      - Helper: reference/daqopen/helper.md
+    - persistmq:
+      - reference/persistmq/index.md
+      - Client: reference/persistmq/client.md   
+    
+
