@@ -38,4 +38,6 @@ It is good practice today to use a virtual environment for python projects. For 
 
 ## Windows
 
-Use this Tutorial to Setup VS Code and Python:
+Install VS Code and the Python Plugin
+
+Install Python >= 3.11 from Windows Store

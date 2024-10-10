@@ -1,23 +1,34 @@
 # Prepare Arduino Due
 
-To use the Arduino Due for Data Acquisition, we have to flash a specific firmware first. This firmware configures the Arduino Due to do the following:
+To use the Arduino Due as a data acquisition device, the first step is to flash the [duedaq](https://github.com/DaqOpen/daqopen-lib/blob/main/firmware/due-daq/due-daq.ino) firmware. This firmware enhances the Arduino Due with several key features for data acquisition, including:
 
-- Setup the ADC in DMA mode and enable AD0, AD2, AD4, AD6, AD10, AD12 in differential mode
+- **Configuring the ADC in DMA mode**: Enables efficient, high-speed data handling by utilizing Direct Memory Access (DMA) for analog-to-digital conversion.
+- **Setting ADC input mode**: Supports both single-ended and differential input modes, where single-ended measures voltage relative to ground and differential measures the difference between two signals.
+- **Adjusting ADC input offset mode**: Option to remove any input offset before amplification in single-ended mode for reducing risk of input saturation.
+- **Setting ADC input gain**: Allows amplification of the input signal for improved signal clarity and accuracy (1-4x).
+- **Adjusting ADC prescaler**: Controls the sampling rate, with a maximum cumulative sample rate of 1000 kS/s.
+- **Enabling specific channels for sampling and streaming**: Select and activate the channels you want to monitor and stream data from.
+- **Configuring the DMA buffer size**: Adjust the buffer size to optimize data transfer performance according to your needs.
+- **Transferring data via the native USB interface**: Allows high-speed communication between the Arduino Due and your (edge) computer for real-time data analysis.
 
-  | SAMD-Notation | Arduino Due Pin |
-  | ------------- | --------------- |
-  | AD0           | A7-A6           |
-  | AD2           | A5-A4           |
-  | AD4           | A3-A2           |
-  | AD6           | A1-A0           |
-  | AD10          | A8-A9           |
-  | AD12          | A10-A11         |
+The following table shows the channel mapping between Atmel SAM3X8E notation and Due Board Pin Names:
 
-- Run the ADC-Scan with about 48 kHz per Channel (~300k Samples/s in total)
+| Due Board Pin (SE) = DueDaq Channel | Due Board Pin (DIFF) = DueDaq Channel | SAMD Pin |
+| ----------------------------------- | ------------------------------------- | -------- |
+| A0                                  |                                       | AD7      |
+| A1                                  | **A1** (A1-A0)                        | AD6      |
+| A2                                  |                                       | AD5      |
+| A3                                  | **A3** (A3-A2)                        | AD4      |
+| A4                                  |                                       | AD3      |
+| A5                                  | **A5** (A5-A4)                        | AD2      |
+| A6                                  |                                       | AD1      |
+| A7                                  | **A7** (A7-A6)                        | AD0      |
+| A8                                  | **A8** (A8-A9)                        | AD10     |
+| A9                                  |                                       | AD11     |
+| A10                                 | **A10** (A10-A11)                     | AD12     |
+| A11                                 |                                       | AD13     |
 
-- Transfer the data in packages of 2048 samples per channel
-
-
+A very good pinout graph can be found here: https://www.robgray.com/temp/Due-pinout.pdf
 
 ## 0. Install Arduino IDE
 

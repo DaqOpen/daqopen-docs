@@ -11,15 +11,28 @@ The following steps must therefore be performed:
 
 ![daqinfo-sketch-1](resources/daqinfo-sketch-1.jpg)
 
-DaqInfo consists of the following:
+**`DaqInfo`** consists of the following:
 
-InputInfo
+- **`BoardInfo`**
 
-- gain: The gain applied to the input channel.
-- offset: The offset applied to the input channel.
-- delay: The delay in sample periods for this channel.
-- unit: The unit of the measurement.
-- ad_index: The index of the analog-to-digital converter channel.
+    - type: The type of daq-board
+
+    - samplerate: Wanted samplerate to be set
+
+    - (other parameter: see Reference)
+
+- **`InputInfo`**
+
+    - gain: The gain applied to the input channel.
+
+    - offset: The offset applied to the input channel.
+
+    - delay: The delay in sample periods for this channel.
+
+    - unit: The unit of the measurement.
+
+    - ai_pin: The analog pin on the Arduino Due board
+
 
 ## Value axis scaling (InputInfo)
 
@@ -31,10 +44,10 @@ In this step, we will do a scaling of the value axis (the physical measurement v
 
     ![due-breadboard-fgen-1](resources/due-breadboard-fgen-1.png)
 
-    Connect the "inner" part of the BNC connector (signal) to the A1 pin, and the GND to the A0 pin. To ensure a common ground, connect the Arduino's GND pin to the signal generator's GND through a 10kΩ resistor.
+    Connect the "inner" part of the BNC connector (signal) to the A1 pin, and the GND to the GND pin. 
 
 2. **Configure the Function Generator:**
-
+	
     Set the function generator to output a signal with the following properties:
 
     - **Waveform:** DC
@@ -61,16 +74,16 @@ In this step, we will do a scaling of the value axis (the physical measurement v
     # First Setpoint
     input("First Setpoint: apply 0.5V and press enter")
     data = read_one_daq_block(myDaq)
-    low_value = data.mean(axis=0)[3] # Calculate average to remove noise
+    low_value = data.mean() # Calculate average to remove noise
     # Print average
-    print(f"Value of AD6 (A1-A0): {low_value:.3f}")
+    print(f"Value of A0: {low_value:.3f}")
     
     # Second Setpoint
     input("Second Setpoint: apply 3.0V and press enter")
     data = read_one_daq_block(myDaq)
-    high_value = data.mean(axis=0)[3] # Calculate average to remove noise
+    high_value = data.mean() # Calculate average to remove noise
     # Print average
-    print(f"Value of AD6 (A1-A0): {high_value:.3f}")
+    print(f"Value of A0: {high_value:.3f}")
     
     # Calculate Gain and Offset
     gain = (3.0 - 0.5) / (high_value - low_value)
@@ -78,10 +91,10 @@ In this step, we will do a scaling of the value axis (the physical measurement v
     print(f"Gain: {gain:.5E}   Offset: {offset:.5E}")
     
     # Scale data
-    A1_A0 = data[:,3]*gain - offset
+    A0 = data*gain - offset
     
     # Plot
-    plt.plot(A1_A0)
+    plt.plot(data_ts, A0)
     plt.grid()
     plt.show()
     ```
@@ -97,84 +110,91 @@ In this step, we will do a scaling of the value axis (the physical measurement v
     You will see an example output like this:
 
     ```
-    Device found on Port: /dev/ttyACM0
-    DueDaq Init Done
     First Setpoint: apply 0.5V and press enter
-    DueDaq Wait for Frame Start
-    DueDaq Search Start
-    DueDaq ACQ Started
-    Value of AD6 (A1-A0): 5021.273
+    Value of A0: 616.640
     Second Setpoint: apply 3.0V and press enter
-    DueDaq Wait for Frame Start
-    DueDaq Search Start
-    DueDaq ACQ Started
-    Value of AD6 (A1-A0): 30299.477
-    Gain: 9.88994E-05   Offset: -3.39890E-03
+    Value of A0: 3761.301
+    Gain: 7.94998E-04   Offset: -9.77193E-03
     ```
-
     
-
+    
+    
 5. **Visualize the adjusted data**
-    ![image-20240927082645604](resources/daqinfo-data-after-adjustment.jpg)
+    ![image-20240927082645604](resources/daqinfo-data-after-adjustment.png)
 
     As you can see, the average value is now exactly at 3.0 V as expected!
 
 ## Time axis scaling
 
-The shown method is for demonstration purpose only. For more accurate scaling, refer to the frequency-measurement tutorial.
+Now we will also do a scaling of the x-axis to view real timestamps and not sample numbers.
 
+1. **Configure the Function Generator:**
+
+    Set the function generator to output a signal with the following properties:
+
+    - **Waveform:** Sine
+    - **Frequency:** 100 Hz
+    - **Amplitude:** 3 Vpp
+    - **Offset:** 1.6 V
+   
 1. **Prepare script for reading some data packages and measuring the time**
 
-   ```python
-   from daqopen.duedaq import DueDaq
-   import numpy as np
-   import time
-   
-   # Create an instance of DueDaq and search for the device
-   myDaq = DueDaq(serial_port_name="SIM")
-   
-   # Start the acquisition device
-   myDaq.start_acquisition()
-   
-   # Remember start timestamp
-   start_ts = time.time()
-   number_of_samples = 0
-   
-   # Read 100 block of data
-   for i in range(100):
+    ```python
+    from daqopen.duedaq import DueDaq
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import time
+
+    # Create an instance of DueDaq and search for the device
+    myDaq = DueDaq()
+
+    # Start the acquisition device
+    myDaq.start_acquisition()
+
+    # Remember start timestamp for checking the samplerate
+    start_ts = time.time()
+    number_of_samples = 0
+
+    # Read 10 block of data
+    for i in range(10):
        data = myDaq.read_data()
        number_of_samples += data.shape[0]
-   
-   # Remember stop timestamp
-   stop_ts = time.time()
-   
-   # Stop the acquisition
-   myDaq.stop_acquisition()
-   
-   # Calculate Samplerate
-   samplerate = number_of_samples/(stop_ts - start_ts)
-   print(f"Samplerate: {samplerate:0.3f} samples/second")
-   ```
 
-   In this script, the following steps are performed:
+    # Remember stop timestamp
+    stop_ts = time.time()
 
-   - Start the Acquisition and **remember the start timestamp**
-   - **Perform an acquisition of 100 Blocks** and count the samples
-   - **Remember the stop timestamp**
-   - **Calculate the samplerate:** number of samples acquired divided by time which was needed to acquire the samples
+    # Stop the acquisition
+    myDaq.stop_acquisition()
 
-   Example output:
+    # Calculate Samplerate
+    samplerate = number_of_samples/(stop_ts - start_ts)
+    print(f"Calculated samplerate: {samplerate:.1f} samples/second")
+    print(f"Set samplerate: {myDaq.samplerate:.1f} samples/second")
 
-   ```
-   Device found on Port: /dev/ttyACM0
-   DueDaq Init Done
-   DueDaq Wait for Frame Start
-   DueDaq Search Start
-   DueDaq ACQ Started
-   Samplerate: 47615.293 samples/second
-   ```
+    # Plot corrected time axis
+    data_ts = np.arange(data.shape[0]) / myDaq.samplerate # Time Axis value in seconds
+    fig, ax = plt.subplots()
+    ax.plot(data_ts, data)
+    ax.set_xlabel("Time in seconds")
+    plt.grid()
+    plt.show()
+    ```
 
-   ![image-20240927093803012](resources/daqinfo-data-samplerate.jpg)
+    In this script, the following steps are performed:
+
+    - Start the Acquisition and **remember the start timestamp**
+    - **Perform an acquisition of 10 Blocks** and count the samples
+    - **Remember the stop timestamp**
+    - **Calculate the samplerate:** number of samples acquired divided by time which was needed to acquire the samples
+
+    Example output:
+
+    ```
+    Calculated samplerate: 49991.4 samples/second
+    Set samplerate: 50000.0 samples/second
+    ```
+
+    ![image-20240927093803012](resources/daqinfo-data-samplerate.png)
 
 
 
@@ -184,48 +204,13 @@ Now, let's collect all the data in a toml file to load it the next time (includi
 
 ```toml
 # This is a Arduino Due DAQ Configuration File
-type = "due-daq"
-samplerate = 47615.293
+[board]
+type = "duedaq"
+samplerate = 50000 # Samplerate to be set
 
-[channel.A1] # This is the channel we inspected now
-ad_index = 3
-gain= 9.88994E-05
-offset = -3.39890E-03
-delay = 0
-unit = "V"
-
-[channel.A2]
-ad_index = 1
-gain= 1.0
-offset = 0.0
-delay = 0
-unit = "V"
-
-[channel.A3]
-ad_index = 2
-gain= 1.0
-offset = 0.0
-delay = 0
-unit = "V"
-
-[channel.A4]
-ad_index = 3
-gain= 1.0
-offset = 0.0
-delay = 0
-unit = "V"
-
-[channel.A5]
-ad_index = 4
-gain= 1.0
-offset = 0.0
-delay = 0
-unit = "V"
-
-[channel.A6]
-ad_index = 5
-gain= 1.0
-offset = 0.0
+[channel.A0] # This is the channel we inspected now
+gain= 7.94998E-04
+offset = -9.77193E-03
 delay = 0
 unit = "V"
 ```
