@@ -2,11 +2,15 @@
 
 *Efficient real-time data acquisition and streaming with Arduino Due*
 
+<img src="resources/Logo_200px.png" alt="Logo_200px" style="zoom:50%;" />
+
 ---
 
 ## What is DaqOpen?
 
 DaqOpen is a Python library designed for developers working with data acquisition (DAQ) systems. It allows you to collect, process, and stream real-time data from Arduino Due (and maybe other controllers in future)
+
+![Schema-Bild](resources/Schema-Bild.png)
 
 ---
 
