@@ -27,10 +27,14 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Tutorials:
-    - Getting Started: tutorials/getting-started-with-due.md
-    - Create DaqInfo: tutorials/create-daqinfo.md
-    - Use Cannelbuffer: tutorials/use-daqinfo-channelbuffer.md
+    - daqopen-lib:
+      - Getting Started: tutorials/getting-started-with-due.md
+      - Create DaqInfo: tutorials/create-daqinfo.md
+      - Use Cannelbuffer: tutorials/use-daqinfo-channelbuffer.md
 #    - tutorials/live-view-data.md
+#    - tutorials/daqzmq.md
+    - pqopen-lib:
+      - First Steps: tutorials/pqopen-first-steps.md
   - How-to-Guides:
     - how-to/prepare-arduino-due.md
     - how-to/setup-python-environment.md
@@ -48,6 +52,11 @@ nav:
       - DaqInfo: reference/daqopen/daqinfo.md
       - DaqZmq: reference/daqopen/daqzmq.md
       - Helper: reference/daqopen/helper.md
+    - pqopen-lib:
+      - reference/pqopen/index.md
+      - PowerSystem: reference/pqopen/powersystem.md
+      - PowerQuality: reference/pqopen/powerquality.md
+      - ZeroCrossDetector: reference/pqopen/zcd.md
     - persistmq:
       - reference/persistmq/index.md
       - Client: reference/persistmq/client.md   
